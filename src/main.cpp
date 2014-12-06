@@ -4,7 +4,7 @@
 #include <string.h>
 #include <unistd.h>
 #include <errno.h>
-#include "icmptx.h"
+#include "icmptx.hpp"
 
 
 #define DST_IP "192.168.0.10"
@@ -25,8 +25,8 @@ int main (int argc, char **argv)
 	{
 		char *msg = new char[strlen(argv[1])];
 		strcpy(msg, argv[1]);
-		icmptx packet(DST_IP);
-		packet.sendPacket(msg, strlen(msg));
+		icmptx packet;
+		packet.sendPacket(DST_IP, msg, strlen(msg));
 
 	}
 	else

@@ -34,9 +34,9 @@ class icmptx
 	struct icmp_packet *icmp;
 	
 	public:
-	icmptx(char *dst_ip);
+	icmptx();
 	~icmptx();
-	int sendPacket(char * msg, int size);
+	int sendPacket(char *dst_ip, char *msg, int size);
 	
 };
 

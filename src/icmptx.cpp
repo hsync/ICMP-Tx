@@ -11,11 +11,11 @@
 #include <netinet/in.h>
 #include <netinet/ip.h>
 #include <netinet/ip_icmp.h>
-#include "icmptx.h"
+#include "icmptx.hpp"
 
 using namespace std;
 
-icmptx::icmptx(char *dst_ip)
+icmptx::icmptx()
 {
 	
 	one = 1;
@@ -41,15 +41,7 @@ icmptx::icmptx(char *dst_ip)
 		perror("setsockopt()");
 		exit(1);
 	}
-	ip->version = 4;		// IPv4
-	ip->ihl = 5;			// Header Lenght
-	ip->id = htonl(rand());	// IP id
-	ip->saddr = inet_addr(SRC_IP);	
-	ip->daddr = inet_addr(dst_ip);
-	ip->ttl = 128;
-	ip->protocol = IPPROTO_ICMP;
-	ip->tot_len = packetsize;
-	ip->check = 0;			// Bei 0 wird die Prüfsumme vom Kernel berechnet
+
 
 }
 
@@ -59,8 +51,18 @@ icmptx::~icmptx()
 	delete []packet;
 }
 
-int icmptx::sendPacket(char * msg, int size)
+int icmptx::sendPacket(char *dest_ip, char *msg, int size)
 {
+	ip->version = 4;		// IPv4
+	ip->ihl = 5;			// Header Lenght
+	ip->id = htonl(rand());	// IP id
+	ip->saddr = inet_addr(SRC_IP);	
+	ip->daddr = inet_addr(dest_ip);
+	ip->ttl = 128;
+	ip->protocol = IPPROTO_ICMP;
+	ip->tot_len = packetsize;
+	ip->check = 0;			// Bei 0 wird die Prüfsumme vom Kernel berechnet
+	
 	icmp->type = ICMP_ECHO;
 	icmp->code = 0;
 	icmp->checksum = 0;
@@ -75,7 +77,7 @@ int icmptx::sendPacket(char * msg, int size)
 	// checksum calc.
 	ptr = (u_int16_t *)icmp;
 	checksum = 0;
-	for(int i = 0; i < (sizeof(struct icmp_packet)/2); i++)
+	for(unsigned int i = 0; i < (sizeof(struct icmp_packet)/2); i++)
 		checksum += 0xFFFF & (*ptr ++);
 
 	checksum = ~((checksum & 0xFFFF) + ((checksum >> 16) & 0xFFFF));
