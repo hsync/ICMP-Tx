@@ -102,7 +102,7 @@ int icmptx::recvPacket()
 	
 	/* prüfe ob icmp packet, prüfe richtige src ip*/
       
-	printf("[\033[32mDEBUG\033[0m] MSG   : %i Byte Date received\n", recv_data_size -28);
+	printf("[\033[32mDEBUG\033[0m] MSG   : %i Byte Data received\n", recv_data_size -28);
     printf("Print Buffer: ");
 
 	for(int i = 0; i<=recv_data_size; i++)
