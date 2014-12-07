@@ -44,6 +44,10 @@ int main (int argc, char **argv)
 		strcpy(msg, argv[1]);
 		icmptx packet;
 		packet.sendPacket(src_ip, dst_ip, msg, strlen(msg));
+		
+		printf("[\033[32mDEBUG\033[0m] MSG   : %i Byte Data sent\n", strlen(msg));
+		
+		packet.recvPacket();
 	}
 	else
 	{

@@ -5,7 +5,7 @@ pingtx: config main.o icmptx.o getip.o
 	
 config:
 	mkdir -p ./out
-	echo -e "IP:0.0.0.0\n" > ./out/config
+	echo -e "IP:192.168.1.1\n" > ./out/config
 
 main.o: main.cpp
 	g++ -o ./out/main.o -c main.cpp 

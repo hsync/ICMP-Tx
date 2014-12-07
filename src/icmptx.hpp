@@ -17,7 +17,7 @@ struct icmp_packet
 	u_int16_t checksum;
 	u_int16_t id;
 	u_int16_t sequence;
-	u_int8_t data[1457];
+	u_int8_t data[1024];
 };
 
 class icmptx
@@ -27,6 +27,9 @@ class icmptx
 	uint16_t *ptr;
 	int32_t checksum;
 	struct sockaddr_in addr;
+	struct sockaddr saddr;
+	socklen_t saddr_size;
+	int recv_data_size;
 	unsigned int packetsize;
 	unsigned char *packet;
 	struct iphdr *ip;
@@ -36,6 +39,7 @@ class icmptx
 	icmptx();
 	~icmptx();
 	int sendPacket(const char *src_ip, const char *dst_ip, const char *msg, int size);
+	int recvPacket();
 
 };
 

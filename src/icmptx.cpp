@@ -21,7 +21,7 @@ icmptx::icmptx()
 	one = 1;
 	packetsize = sizeof(struct iphdr) + sizeof(struct icmp_packet);
 	packet = new unsigned char[packetsize];
-	
+	saddr_size = sizeof(saddr);
 	
 	ip = (struct iphdr *)packet;
 	icmp = (struct icmp_packet *)(packet + sizeof(struct iphdr));
@@ -95,3 +95,30 @@ int icmptx::sendPacket(const char *src_ip, const char *dest_ip, const char *msg,
 	return 0;
 }
 
+int icmptx::recvPacket()
+{
+	char buffer[1200];
+	recv_data_size = recvfrom(rawsock , buffer , 1200 , 0 , &saddr , &saddr_size);
+	
+	/* prüfe ob icmp packet, prüfe richtige src ip*/
+      
+	printf("[\033[32mDEBUG\033[0m] MSG   : %i Byte Date received\n", recv_data_size -28);
+    printf("Print Buffer: ");
+
+	for(int i = 0; i<=recv_data_size; i++)
+	{
+		printf("0x%02x ",(unsigned int8_t)buffer[i]);
+	} 
+	
+	printf("\n\nPrint Buffer: ");
+	for(int i = 0; i<=recv_data_size; i++)
+	{
+		if (buffer[i] > 32 && buffer[i] < 127)
+			printf("%c ",buffer[i]);
+		else 
+			printf("..");
+	} 
+	
+	 printf("\n\n");
+ }
+           
