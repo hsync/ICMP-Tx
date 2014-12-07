@@ -51,12 +51,12 @@ icmptx::~icmptx()
 	delete []packet;
 }
 
-int icmptx::sendPacket(char *dest_ip, char *msg, int size)
+int icmptx::sendPacket(const char *src_ip, const char *dest_ip, const char *msg, int size)
 {
 	ip->version = 4;		// IPv4
 	ip->ihl = 5;			// Header Lenght
 	ip->id = htonl(rand());	// IP id
-	ip->saddr = inet_addr(SRC_IP);	
+	ip->saddr = inet_addr(src_ip);	
 	ip->daddr = inet_addr(dest_ip);
 	ip->ttl = 128;
 	ip->protocol = IPPROTO_ICMP;

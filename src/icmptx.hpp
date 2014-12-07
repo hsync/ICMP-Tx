@@ -9,7 +9,6 @@
 #include <netinet/ip.h>
 #include <netinet/ip_icmp.h>
 
-#define SRC_IP "192.168.0.25"
 
 struct icmp_packet
 {
@@ -32,12 +31,12 @@ class icmptx
 	unsigned char *packet;
 	struct iphdr *ip;
 	struct icmp_packet *icmp;
-	
+
 	public:
 	icmptx();
 	~icmptx();
-	int sendPacket(char *dst_ip, char *msg, int size);
-	
+	int sendPacket(const char *src_ip, const char *dst_ip, const char *msg, int size);
+
 };
 
 #endif

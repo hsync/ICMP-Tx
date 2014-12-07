@@ -1,8 +1,17 @@
-pingtx: main.o icmptx.o
-	g++ -o pingtx main.o icmptx.o
+
+pingtx: config main.o icmptx.o getip.o
+	g++ -o ./out/pingtx ./out/main.o ./out/icmptx.o ./out/getip.o
+	rm ./out/main.o ./out/icmptx.o ./out/getip.o
+	
+config:
+	mkdir -p ./out
+	echo -e "IP:0.0.0.0\n" > ./out/config
 
 main.o: main.cpp
-	g++ -c main.cpp
+	g++ -o ./out/main.o -c main.cpp 
 
 icmptx.o: icmptx.cpp
-	g++ -c icmptx.cpp
+	g++ -o ./out/icmptx.o -c icmptx.cpp
+
+getip.o: getip.c
+	g++ -o ./out/getip.o -c getip.c
