@@ -23,17 +23,21 @@ struct icmp_packet
 class icmptx
 {
 	private:
-	int rawsock, one;
 	uint16_t *ptr;
-	int32_t checksum;
-	struct sockaddr_in addr;
-	struct sockaddr saddr;
-	socklen_t saddr_size;
-	int recv_data_size;
 	unsigned int packetsize;
 	unsigned char *packet;
+	int32_t checksum;
+	int rawsock, one;
+	struct sockaddr_in addr;
 	struct iphdr *ip;
 	struct icmp_packet *icmp;
+	
+	int recv_data_size;
+	char recv_buffer[1200];
+	struct in_addr ip_addr;
+	struct iphdr *iph;
+	struct sockaddr saddr;
+	socklen_t saddr_size;
 
 	public:
 	icmptx();

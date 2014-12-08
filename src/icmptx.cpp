@@ -17,18 +17,18 @@ using namespace std;
 
 icmptx::icmptx()
 {
-	
+
 	one = 1;
 	packetsize = sizeof(struct iphdr) + sizeof(struct icmp_packet);
 	packet = new unsigned char[packetsize];
 	saddr_size = sizeof(saddr);
-	
+
 	ip = (struct iphdr *)packet;
 	icmp = (struct icmp_packet *)(packet + sizeof(struct iphdr));
 	srand(time(NULL));
 	memset(packet, 0, packetsize);
-	
-	
+
+
 	// Rawsocket erstellen
 	if((rawsock = socket(AF_INET, SOCK_RAW, IPPROTO_ICMP)) == -1)
 	{
@@ -62,7 +62,7 @@ int icmptx::sendPacket(const char *src_ip, const char *dest_ip, const char *msg,
 	ip->protocol = IPPROTO_ICMP;
 	ip->tot_len = packetsize;
 	ip->check = 0;			// Bei 0 wird die Prüfsumme vom Kernel berechnet
-	
+
 	icmp->type = ICMP_ECHO;
 	icmp->code = 0;
 	icmp->checksum = 0;
@@ -73,7 +73,7 @@ int icmptx::sendPacket(const char *src_ip, const char *dest_ip, const char *msg,
 	memset((char *)&icmp->data, 0, sizeof(icmp->data));
 	strncpy((char *)&icmp->data, msg, size);
 	packetsize = sizeof(struct iphdr) + sizeof(struct icmp_packet) - sizeof(icmp->data) + size;
-	
+
 	// checksum calc.
 	ptr = (u_int16_t *)icmp;
 	checksum = 0;
@@ -91,34 +91,45 @@ int icmptx::sendPacket(const char *src_ip, const char *dest_ip, const char *msg,
 		perror("sendto()");
 		return(1);
 	}
-	
+
 	return 0;
 }
 
 int icmptx::recvPacket()
 {
-	char buffer[1200];
-	recv_data_size = recvfrom(rawsock , buffer , 1200 , 0 , &saddr , &saddr_size);
 	
-	/* prüfe ob icmp packet, prüfe richtige src ip*/
-      
-	printf("[\033[32mDEBUG\033[0m] MSG   : %i Byte Data received\n", recv_data_size -28);
-    printf("Print Buffer: ");
+	recv_data_size = recvfrom(rawsock , recv_buffer , 1200 , 0 , &saddr , &saddr_size);
+	
+	iph = (struct iphdr*)recv_buffer;
+    ip_addr.s_addr = iph->saddr;
+    
+    printf("[\033[32mDEBUG\033[0m] MSG   : %i Byte Data received\n", recv_data_size -28);
+	
+	/* Check for ICMP-Packet */
+	if(iph->protocol == 1) 	
+				printf("[\033[32mDEBUG\033[0m] MSG   : Receive ICMP Packet\n");
+				
+	/* Print source IP */ 	
+	printf("[\033[32mDEBUG\033[0m] From  : %s\n", inet_ntoa(ip_addr));
 
-	for(int i = 0; i<=recv_data_size; i++)
-	{
-		printf("0x%02x ",(unsigned int8_t)buffer[i]);
-	} 
 	
+	
+	printf("Print Buffer: ");
+
+	for(int i = 0; i<recv_data_size; i++)
+	{
+		printf("0x%02x ",(unsigned int8_t)recv_buffer[i]);
+	}
+
 	printf("\n\nPrint Buffer: ");
-	for(int i = 0; i<=recv_data_size; i++)
+	for(int i = 0; i<recv_data_size; i++)
 	{
-		if (buffer[i] > 32 && buffer[i] < 127)
-			printf("%c ",buffer[i]);
-		else 
+		if (recv_buffer[i] > 32 && recv_buffer[i] < 127)
+			printf("%c ",recv_buffer[i]);
+		else
 			printf("..");
-	} 
-	
+	}
+
 	 printf("\n\n");
  }
-           
+
