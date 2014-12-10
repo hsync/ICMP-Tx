@@ -8,11 +8,17 @@ import random
 import asyncore
 import time
 
-print " "
-
 
 ICMP_ECHO_REQUEST = 8
 ICMP_ECHO_CODE = 0
+i = 6
+
+def getdstIP():
+	fd = open("./config", "r")
+	config_data = fd.read()
+	fd.close()
+	return config_data[3:config_data.rfind("\n")]
+
 
 #Calc cheksum
 def icmp_checksum(source_string):
@@ -53,21 +59,23 @@ def sendPacket(dst_Ip, msg_fp):
 
 #Old Message and Destination.
 msg = "Hello World"
-dst = '192.168.178.58'
 
 '''
-dst = raw_input("Type your destination (192.168.2.1) for sending a Message: ")
+dst_ip = raw_input("Type your destination (192.168.2.1) for sending a Message: ")
 msg = raw_input("Type your Message: ")'''
 print " "
 
+dst_ip = getdstIP()
+
 connection = socket.socket(proto = socket.IPPROTO_ICMP, type = socket.SOCK_RAW)
-sendPacket(dst, msg)
-print "[ \033[32mDEBUG\033[0m ] DST_IP : " + dst
+sendPacket(dst_ip, msg)
+print "[ \033[32mDEBUG\033[0m ] DST_IP : " + dst_ip
 print "[ \033[32mDEBUG\033[0m ] MSG    : " + str(len(msg)) + " Byte sent"
 print " "
 datan = connection.recvfrom(100)
 
-print datan
+print datan[2:]
+
 
 
 connection.close()
