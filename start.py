@@ -2,11 +2,15 @@
 
 import socket
 import struct
-
-import select
+import os
 import random
+import sys
+
+'''
+import select
 import asyncore
 import time
+'''
 
 
 ICMP_ECHO_REQUEST = 8
@@ -14,7 +18,7 @@ ICMP_ECHO_CODE = 0
 i = 6
 
 def getdstIP():
-	fd = open("./config", "r")
+	fd = open(sys.argv[0][:sys.argv[0].rfind("/")] + "/config", "r")
 	config_data = fd.read()
 	fd.close()
 	return config_data[3:config_data.rfind("\n")]
