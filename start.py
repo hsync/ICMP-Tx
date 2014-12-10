@@ -8,6 +8,8 @@ import random
 import asyncore
 import time
 
+print " "
+
 
 ICMP_ECHO_REQUEST = 8
 ICMP_ECHO_CODE = 0
@@ -46,14 +48,21 @@ def sendPacket(dst_Ip, msg_fp):
 	connection.sendto(header+msg_fp, (dst_Ip, 0))
 
 
-
+'''
+Old Message and Destination.
 msg = "Hello World"
-dst = '192.168.178.25'
+dst = '192.168.178.58'
+'''
+
+dst = raw_input("Type your destination (192.168.2.1) for sending a Message: ")
+msg = raw_input("Type your Message: ")
+print " "
 
 connection = socket.socket(proto = socket.IPPROTO_ICMP, type = socket.SOCK_RAW)
 sendPacket(dst, msg)
 print "[ \033[32mDEBUG\033[0m ] DST_IP : " + dst
 print "[ \033[32mDEBUG\033[0m ] MSG    : " + str(len(msg)) + " Byte sent"
+print " "
 datan = connection.recvfrom(100)
 
 print datan
