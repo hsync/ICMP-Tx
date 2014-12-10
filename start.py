@@ -18,6 +18,7 @@ ICMP_ECHO_CODE = 0
 i = 6
 
 def getdstIP():
+	
 	fd = open(sys.argv[0][:sys.argv[0].rfind("/")] + "/config", "r")
 	config_data = fd.read()
 	fd.close()
@@ -44,9 +45,10 @@ def icmp_checksum(source_string):
 	answer = answer >> 8 | (answer << 8 & 0xff00)
 	return answer
 
+
 def sendPacket(dst_Ip, msg_fp):
+	#generate ICMP-Id
 	id = random.randint(1, 65535)
-	print "[ \033[32mDEBUG\033[0m ] ID     : " + str(id)
 
 	# make dummy header vor calculate the checksum
 	header = struct.pack('bbHHh', ICMP_ECHO_REQUEST, ICMP_ECHO_CODE, 0, id, 1)
@@ -59,6 +61,16 @@ def sendPacket(dst_Ip, msg_fp):
 	connection.sendto(header+msg_fp, (dst_Ip, 0))
 
 
+def recvPacket():
+	data, addr = connection.recvfrom(1024)
+	icmp_header = data[20:28]
+	itype, icode, checksum, packetID, sequence = struct.unpack("bbHHh", icmp_header)
+	
+	print "[ \033[32mDEBUG\033[0m ] MSG    : " + str(len(data[28:])) + " Byte received"
+	print "[ \033[32mDEBUG\033[0m ] MSG    : Received message content"
+	print "\n>>> " + data[28:]
+	
+	
 
 
 #Old Message and Destination.
@@ -73,13 +85,13 @@ dst_ip = getdstIP()
 
 connection = socket.socket(proto = socket.IPPROTO_ICMP, type = socket.SOCK_RAW)
 sendPacket(dst_ip, msg)
+
 print "[ \033[32mDEBUG\033[0m ] DST_IP : " + dst_ip
 print "[ \033[32mDEBUG\033[0m ] MSG    : " + str(len(msg)) + " Byte sent"
-print " "
-datan = connection.recvfrom(100)
-
-print datan[2:]
 
 
+recvPacket()
 
 connection.close()
+
+print ""
