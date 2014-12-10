@@ -1,6 +1,7 @@
 #!/usr/bin/env python2.7
 
 import socket
+import string
 import struct
 import os
 import random
@@ -15,15 +16,21 @@ import time
 
 ICMP_ECHO_REQUEST = 8
 ICMP_ECHO_CODE = 0
-i = 6
 
 def getdstIP():
 	
 	fd = open(sys.argv[0][:sys.argv[0].rfind("/")] + "/config", "r")
-	config_data = fd.read()
+	config_data = fd.readline()
 	fd.close()
 	return config_data[3:config_data.rfind("\n")]
+	
 
+def getProxyPort():
+	
+	fd = open(sys.argv[0][:sys.argv[0].rfind("/")] + "/config", "r")
+	config_data = fd.readlines()[1]
+	fd.close()
+	return config_data[10:config_data.rfind("\n")]
 
 #Calc cheksum
 def icmp_checksum(source_string):
@@ -46,7 +53,8 @@ def icmp_checksum(source_string):
 	return answer
 
 
-def sendPacket(dst_Ip, msg_fp):
+def icmptx_sendPacket(dst_Ip, msg_fp):
+	
 	#generate ICMP-Id
 	id = random.randint(1, 65535)
 
@@ -58,40 +66,66 @@ def sendPacket(dst_Ip, msg_fp):
 
 	header = struct.pack('bbHHh', ICMP_ECHO_REQUEST, ICMP_ECHO_CODE, socket.htons(my_checksum), id, 1)
 
-	connection.sendto(header+msg_fp, (dst_Ip, 0))
+	icmptx_connection.sendto(header+msg_fp, (dst_Ip, 0))
 
 
-def recvPacket():
-	data, addr = connection.recvfrom(1024)
+def icmptx_recvPacket():
+	data, addr = icmptx_connection.recvfrom(1024)
 	icmp_header = data[20:28]
 	itype, icode, checksum, packetID, sequence = struct.unpack("bbHHh", icmp_header)
 	
-	print "[ \033[32mDEBUG\033[0m ] MSG    : " + str(len(data[28:])) + " Byte received"
-	print "[ \033[32mDEBUG\033[0m ] MSG    : Received message content"
-	print "\n>>> " + data[28:]
+	print "[ \033[32mDEBUG\033[0m ] RX     : " + str(len(data[28:])) + " Byte received"
+	print "[ \033[32mDEBUG\033[0m ] RX     : Received message content"
+	print "[ \033[32mDEBUG\033[0m ] MSG    : " + data[28:]
 	
+	return data[28:]
+	
+#def proxy_sendPacket():
+	
+def proxy_recvPacket():
+	conn, addr = proxy_connection.accept()
+	print "[ \033[32mDEBUG\033[0m ] PROXY  : Source IP " + addr[0]
+	print "[ \033[32mDEBUG\033[0m ] PROXY  : Source Port " + str(addr[1])
+	while 1:
+		data = conn.recv(1024)
+		icmptx_sendPacket(getdstIP(), data)
+		conn.send(icmptx_recvPacket()) 	
+	conn.close()
 	
 
 
-#Old Message and Destination.
-msg = "Hello World"
-
-'''
-dst_ip = raw_input("Type your destination (192.168.2.1) for sending a Message: ")
-msg = raw_input("Type your Message: ")'''
+#main program
 print " "
-
+msg = "Hello World"
 dst_ip = getdstIP()
+getProxyPort()
 
-connection = socket.socket(proto = socket.IPPROTO_ICMP, type = socket.SOCK_RAW)
-sendPacket(dst_ip, msg)
+#open icmptx socket
+icmptx_connection = socket.socket(proto = socket.IPPROTO_ICMP, type = socket.SOCK_RAW)
 
-print "[ \033[32mDEBUG\033[0m ] DST_IP : " + dst_ip
-print "[ \033[32mDEBUG\033[0m ] MSG    : " + str(len(msg)) + " Byte sent"
+#open proxy socket
+proxy_connection = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+proxy_connection.bind(('127.0.0.1',string.atoi(getProxyPort())))
+proxy_connection.listen(1)
 
 
-recvPacket()
 
-connection.close()
+
+icmptx_sendPacket(dst_ip, msg)
+
+print "[ \033[32mDEBUG\033[0m ] ICMPTX : Server IP " + dst_ip
+print "[ \033[32mDEBUG\033[0m ] PROXY  : Use Port " + getProxyPort()
+print "[ \033[32mDEBUG\033[0m ] TX     : " + str(len(msg)) + " Byte sent"
+
+
+icmptx_recvPacket()
+
+
+proxy_recvPacket()
+icmptx_connection.close()
+
+
+
+
 
 print ""
