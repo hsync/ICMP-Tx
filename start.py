@@ -35,7 +35,8 @@ def icmp_checksum(source_string):
 	return answer
 
 def sendPacket(dst_Ip, msg_fp):
-	id = 5032
+	id = random.randint(1, 65535)
+	print id
 
 	# make dummy header vor calculate the checksum
 	header = struct.pack('bbHHh', ICMP_ECHO_REQUEST, ICMP_ECHO_CODE, 0, id, 1)
@@ -48,8 +49,9 @@ def sendPacket(dst_Ip, msg_fp):
 	connection.sendto(header+msg_fp, (dst_Ip, 0))
 
 
+
 '''
-Old Message and Destination.
+#Old Message and Destination.
 msg = "Hello World"
 dst = '192.168.178.58'
 '''
