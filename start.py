@@ -44,7 +44,7 @@ def sendPacket(dst_Ip, msg_fp):
 	my_checksum = icmp_checksum(header + msg_fp)
 
 	header = struct.pack('bbHHh', ICMP_ECHO_REQUEST, ICMP_ECHO_CODE, socket.htons(my_checksum), id, 1)
-
+	connection.settimeout(4)
 	connection.sendto(header+msg_fp, (dst_Ip, 0))
 
 
