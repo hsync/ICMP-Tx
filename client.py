@@ -56,15 +56,15 @@ def icmp_checksum(source_string):
 def icmptx_sendPacket(dst_Ip, msg_fp):
 	
 	#generate ICMP-Id
-	id = random.randint(1, 65535)
+	packetID = random.randint(1, 65535)
 
 	# make dummy header vor calculate the checksum
-	header = struct.pack('bbHHh', ICMP_ECHO_REQUEST, ICMP_ECHO_CODE, 0, id, 1)
+	header = struct.pack('bbHHh', ICMP_ECHO_REQUEST, ICMP_ECHO_CODE, 0, packetID, 1)
 
 	# Calculate the checksum on the data and the dummy header.
 	my_checksum = icmp_checksum(header + msg_fp)
 
-	header = struct.pack('bbHHh', ICMP_ECHO_REQUEST, ICMP_ECHO_CODE, socket.htons(my_checksum), id, 1)
+	header = struct.pack('bbHHh', ICMP_ECHO_REQUEST, ICMP_ECHO_CODE, socket.htons(my_checksum), packetID, 1)
 
 	icmptx_connection.sendto(header+msg_fp, (dst_Ip, 0))
 	print "[ \033[32mDEBUG\033[0m ] TX     : " + str(len(msg_fp)) + " Byte sent"

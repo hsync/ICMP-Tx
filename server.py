@@ -9,6 +9,7 @@ import sys
 
 
 ICMP_ECHO_REQUEST = 8
+ICMP_ECHO_RESPONSE = 0
 ICMP_ECHO_CODE = 0
 
 
@@ -33,18 +34,18 @@ def icmp_checksum(source_string):
 	return answer
 
 
-def icmptx_sendPacket(dst_Ip, msg_fp):
+def icmptx_sendPacket(dst_Ip, packetID, msg_fp):
 	
 	#generate ICMP-Id
-	id = random.randint(1, 65535)
+	#packetID= random.randint(1, 65535)
 
 	# make dummy header vor calculate the checksum
-	header = struct.pack('bbHHh', ICMP_ECHO_REQUEST, ICMP_ECHO_CODE, 0, id, 1)
+	header = struct.pack('bbHHh', ICMP_ECHO_RESPONSE, ICMP_ECHO_CODE, 0, packetID, 1)
 
 	# Calculate the checksum on the data and the dummy header.
 	my_checksum = icmp_checksum(header + msg_fp)
 
-	header = struct.pack('bbHHh', ICMP_ECHO_REQUEST, ICMP_ECHO_CODE, socket.htons(my_checksum), id, 1)
+	header = struct.pack('bbHHh', ICMP_ECHO_REQUEST, ICMP_ECHO_CODE, socket.htons(my_checksum), packetID, 1)
 
 	icmptx_connection.sendto(header+msg_fp, (dst_Ip, 0))
 
@@ -55,33 +56,28 @@ def icmptx_recvPacket():
 	itype, icode, checksum, packetID, sequence = struct.unpack("bbHHh", icmp_header)
 	host = data[28:]
 	host = host[host.rfind("Host: ")+6:]
-	host = host[:host.find("\n\r")]
+	host = host[:host.find("\r\n")]
 	
+
+	print "[ \033[32mDEBUG\033[0m ] RX     : Connected with " + addr[0]
 	print "[ \033[32mDEBUG\033[0m ] RX     : " + str(len(data[28:])) + " Byte received"
 	print "[ \033[32mDEBUG\033[0m ] RX     : Received message content"
 	print "[ \033[32mDEBUG\033[0m ] MSG    :\n" + data[28:]
 	print "[ \033[32mDEBUG\033[0m ] MSG    : Requestet Host"
 	print "[ \033[32mDEBUG\033[0m ] MSG    :\n" + host
 
-	tube_sendPacket(host, data[28:])
+	icmptx_sendPacket(addr[0],packetID,tube_sendPacket(host, data[28:]))
 	
 def tube_sendPacket(host, data):
 	s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 	s.connect(("host",80))
 	s.send(data)
 	msg = s.recv(1500)
-	print msg
+	return msg
 
 #main program
 print ""
 
-'''
-msg = "GET http://felixschulze.com/ HTTP/1.1\n\rHost: felixschulze.com\n\rUser-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:34.0) Gecko/20100101 Firefox/34.0\n\rAccept: text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8\n\rAccept-Language: de,en-US;q=0.7,en;q=0.3\n\rAccept-Encoding: gzip, deflate\n\rCookie: __utma=235025942.20283750.1417541549.1417541549.1417541549.1; __utmz=235025942.1417541549.1.1.utmcsr=(direct)|utmccn=(direct)|utmcmd=(none)\n\rConnection: keep-alive"
-
-msg1 = msg[msg.rfind("Host: ")+6:]
-msg2 = msg1[:msg1.find("\n\r")]
-print (msg2)
-'''
 
 #open icmptx socket
 icmptx_connection = socket.socket(proto = socket.IPPROTO_ICMP, type = socket.SOCK_RAW)
