@@ -7,30 +7,10 @@ import os
 import random
 import sys
 
-'''
-import select
-import asyncore
-import time
-'''
-
 
 ICMP_ECHO_REQUEST = 8
 ICMP_ECHO_CODE = 0
 
-def getdstIP():
-	
-	fd = open(sys.argv[0][:sys.argv[0].rfind("/")] + "/config", "r")
-	config_data = fd.readline()
-	fd.close()
-	return config_data[3:config_data.rfind("\n")]
-	
-
-def getProxyPort():
-	
-	fd = open(sys.argv[0][:sys.argv[0].rfind("/")] + "/config", "r")
-	config_data = fd.readlines()[1]
-	fd.close()
-	return config_data[10:config_data.rfind("\n")]
 
 #Calc cheksum
 def icmp_checksum(source_string):
@@ -73,58 +53,44 @@ def icmptx_recvPacket():
 	data, addr = icmptx_connection.recvfrom(1024)
 	icmp_header = data[20:28]
 	itype, icode, checksum, packetID, sequence = struct.unpack("bbHHh", icmp_header)
+	host = data[28:]
+	host = host[host.rfind("Host: ")+6:]
+	host = host[:host.find("\n\r")]
 	
 	print "[ \033[32mDEBUG\033[0m ] RX     : " + str(len(data[28:])) + " Byte received"
 	print "[ \033[32mDEBUG\033[0m ] RX     : Received message content"
-	print "[ \033[32mDEBUG\033[0m ] MSG    : " + data[28:]
-	
-	return data[28:]
-	
-#def proxy_sendPacket():
-	
-def proxy_recvPacket():
-	conn, addr = proxy_connection.accept()
-	print "[ \033[32mDEBUG\033[0m ] PROXY  : Source IP " + addr[0]
-	print "[ \033[32mDEBUG\033[0m ] PROXY  : Source Port " + str(addr[1])
-	while 1:
-		data = conn.recv(1024)
-		icmptx_sendPacket(getdstIP(), data)
-		conn.send(icmptx_recvPacket()) 	
-	conn.close()
-	
+	print "[ \033[32mDEBUG\033[0m ] MSG    :\n" + data[28:]
+	print "[ \033[32mDEBUG\033[0m ] MSG    : Requestet Host"
+	print "[ \033[32mDEBUG\033[0m ] MSG    :\n" + host
 
+	tube_sendPacket(host, data[28:])
+	
+def tube_sendPacket(host, data):
+	s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+	s.connect(("host",80))
+	s.send(data)
+	msg = s.recv(1500)
+	print msg
 
 #main program
-print " "
-msg = "Hello World"
-dst_ip = getdstIP()
-getProxyPort()
+print ""
+
+'''
+msg = "GET http://felixschulze.com/ HTTP/1.1\n\rHost: felixschulze.com\n\rUser-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:34.0) Gecko/20100101 Firefox/34.0\n\rAccept: text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8\n\rAccept-Language: de,en-US;q=0.7,en;q=0.3\n\rAccept-Encoding: gzip, deflate\n\rCookie: __utma=235025942.20283750.1417541549.1417541549.1417541549.1; __utmz=235025942.1417541549.1.1.utmcsr=(direct)|utmccn=(direct)|utmcmd=(none)\n\rConnection: keep-alive"
+
+msg1 = msg[msg.rfind("Host: ")+6:]
+msg2 = msg1[:msg1.find("\n\r")]
+print (msg2)
+'''
 
 #open icmptx socket
 icmptx_connection = socket.socket(proto = socket.IPPROTO_ICMP, type = socket.SOCK_RAW)
 
-#open proxy socket
-proxy_connection = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-proxy_connection.bind(('127.0.0.1',string.atoi(getProxyPort())))
-proxy_connection.listen(1)
-
-
-
-
-icmptx_sendPacket(dst_ip, msg)
-
-print "[ \033[32mDEBUG\033[0m ] ICMPTX : Server IP " + dst_ip
-print "[ \033[32mDEBUG\033[0m ] PROXY  : Use Port " + getProxyPort()
-print "[ \033[32mDEBUG\033[0m ] TX     : " + str(len(msg)) + " Byte sent"
-
-
 icmptx_recvPacket()
 
 
-proxy_recvPacket()
+
 icmptx_connection.close()
-
-
 
 
 
