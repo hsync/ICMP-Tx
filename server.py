@@ -63,16 +63,20 @@ def icmptx_recvPacket():
 	print "[ \033[32mDEBUG\033[0m ] RX     : " + str(len(data[28:])) + " Byte received"
 	print "[ \033[32mDEBUG\033[0m ] RX     : Received message content"
 	print "[ \033[32mDEBUG\033[0m ] MSG    :\n" + data[28:]
-	print "[ \033[32mDEBUG\033[0m ] MSG    : Requestet Host"
+	print "[ \033[32mDEBUG\033[0m ] RX    : Requestet Host"
 	print "[ \033[32mDEBUG\033[0m ] MSG    :\n" + host
-
-	icmptx_sendPacket(addr[0],packetID,tube_sendPacket(host, data[28:]))
+	
+	if(str(len(data[28:])) > 0)
+		icmptx_sendPacket(addr[0],packetID,tube_sendPacket(host, data[28:]))
 	
 def tube_sendPacket(host, data):
+
 	s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 	s.connect((host,80))
 	s.send(data)
 	msg = s.recv(1500)
+	print "[ \033[32mDEBUG\033[0m ] RX     : Sent message content"
+	print "[ \033[32mDEBUG\033[0m ] MSG    :\n" + msg	
 	return msg
 
 #main program
@@ -81,8 +85,8 @@ print ""
 
 #open icmptx socket
 icmptx_connection = socket.socket(proto = socket.IPPROTO_ICMP, type = socket.SOCK_RAW)
-
-icmptx_recvPacket()
+while 1:
+	icmptx_recvPacket()
 
 
 
