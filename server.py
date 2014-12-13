@@ -51,7 +51,7 @@ def icmptx_sendPacket(dst_Ip, packetID, msg_fp):
 
 
 def icmptx_recvPacket():
-	data, addr = icmptx_connection.recvfrom(1024)
+	data, addr = icmptx_connection.recvfrom(1500)
 	icmp_header = data[20:28]
 	itype, icode, checksum, packetID, sequence = struct.unpack("bbHHh", icmp_header)
 	host = data[28:]
@@ -70,7 +70,7 @@ def icmptx_recvPacket():
 	
 def tube_sendPacket(host, data):
 	s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-	s.connect(("host",80))
+	s.connect((host,80))
 	s.send(data)
 	msg = s.recv(1500)
 	return msg
