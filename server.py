@@ -51,7 +51,7 @@ def icmptx_sendPacket(dst_Ip, packetID, msg_fp):
 
 
 def icmptx_recvPacket():
-	data, addr = icmptx_connection.recvfrom(1500)
+	data, addr = icmptx_connection.recvfrom(1600)
 	icmp_header = data[20:28]
 	itype, icode, checksum, packetID, sequence = struct.unpack("bbHHh", icmp_header)
 	host = data[28:]
@@ -63,10 +63,10 @@ def icmptx_recvPacket():
 	print "[ \033[32mDEBUG\033[0m ] RX     : " + str(len(data[28:])) + " Byte received"
 	print "[ \033[32mDEBUG\033[0m ] RX     : Received message content"
 	print "[ \033[32mDEBUG\033[0m ] MSG    :\n" + data[28:]
-	print "[ \033[32mDEBUG\033[0m ] RX    : Requestet Host"
+	print "[ \033[32mDEBUG\033[0m ] RX     : Requestet Host"
 	print "[ \033[32mDEBUG\033[0m ] MSG    :\n" + host
 	
-	if(str(len(data[28:])) > 0)
+	if(str(len(data[28:])) > 0):
 		icmptx_sendPacket(addr[0],packetID,tube_sendPacket(host, data[28:]))
 	
 def tube_sendPacket(host, data):
@@ -74,7 +74,7 @@ def tube_sendPacket(host, data):
 	s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 	s.connect((host,80))
 	s.send(data)
-	msg = s.recv(1500)
+	msg = s.recv(1600)
 	print "[ \033[32mDEBUG\033[0m ] RX     : Sent message content"
 	print "[ \033[32mDEBUG\033[0m ] MSG    :\n" + msg	
 	return msg
