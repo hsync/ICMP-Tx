@@ -71,7 +71,7 @@ def icmptx_sendPacket(dst_Ip, msg_fp):
 
 
 def icmptx_recvPacket():
-	data, addr = icmptx_connection.recvfrom(1600)
+	data, addr = icmptx_connection.recvfrom(15000)
 	icmp_header = data[20:28]
 	itype, icode, checksum, packetID, sequence = struct.unpack("bbHHh", icmp_header)
 	
@@ -84,10 +84,13 @@ def icmptx_recvPacket():
 
 def proxy_recvPacket():
 	conn, addr = proxy_connection.accept()
+	proxy_connection.setblocking(0)
 	print "[ \033[32mDEBUG\033[0m ] PROXY  : Source IP " + addr[0]
 	print "[ \033[32mDEBUG\033[0m ] PROXY  : Source Port " + str(addr[1])
 	while 1:
-		data = conn.recv(1600)
+		data = conn.recv(15000)
+		if(len(data) == 0):
+			continue
 		icmptx_sendPacket(getdstIP(), data)
 		icmptx_recvPacket()
 		conn.send(icmptx_recvPacket()) 	
@@ -107,6 +110,7 @@ icmptx_connection = socket.socket(proto = socket.IPPROTO_ICMP, type = socket.SOC
 proxy_connection = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 proxy_connection.bind(('127.0.0.1',string.atoi(getProxyPort())))
 proxy_connection.listen(1)
+proxy_connection.setblocking(0)
 
 
 print "[ \033[32mDEBUG\033[0m ] ICMPTX : Server IP " + dst_ip

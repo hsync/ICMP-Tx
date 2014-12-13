@@ -45,13 +45,13 @@ def icmptx_sendPacket(dst_Ip, packetID, msg_fp):
 	# Calculate the checksum on the data and the dummy header.
 	my_checksum = icmp_checksum(header + msg_fp)
 
-	header = struct.pack('bbHHh', ICMP_ECHO_REQUEST, ICMP_ECHO_CODE, socket.htons(my_checksum), packetID, 1)
+	header = struct.pack('bbHHh', ICMP_ECHO_RESPONSE, ICMP_ECHO_CODE, socket.htons(my_checksum), packetID, 1)
 
 	icmptx_connection.sendto(header+msg_fp, (dst_Ip, 0))
 
 
 def icmptx_recvPacket():
-	data, addr = icmptx_connection.recvfrom(1600)
+	data, addr = icmptx_connection.recvfrom(15000)
 	icmp_header = data[20:28]
 	itype, icode, checksum, packetID, sequence = struct.unpack("bbHHh", icmp_header)
 	host = data[28:]
@@ -66,15 +66,14 @@ def icmptx_recvPacket():
 	print "[ \033[32mDEBUG\033[0m ] RX     : Requestet Host"
 	print "[ \033[32mDEBUG\033[0m ] MSG    :\n" + host
 	
-	if(str(len(data[28:])) > 0):
-		icmptx_sendPacket(addr[0],packetID,tube_sendPacket(host, data[28:]))
+	icmptx_sendPacket(addr[0],packetID,tube_sendPacket(host, data[28:]))
 	
 def tube_sendPacket(host, data):
 
 	s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 	s.connect((host,80))
 	s.send(data)
-	msg = s.recv(1600)
+	msg = s.recv(15000)
 	print "[ \033[32mDEBUG\033[0m ] RX     : Sent message content"
 	print "[ \033[32mDEBUG\033[0m ] MSG    :\n" + msg	
 	return msg
