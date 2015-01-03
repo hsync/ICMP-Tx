@@ -65,11 +65,14 @@ def icmptx_recvPacket():
 	print "[ \033[32mDEBUG\033[0m ] MSG    :\n" + data[28:]
 	print "[ \033[32mDEBUG\033[0m ] RX     : Requestet Host"
 	print "[ \033[32mDEBUG\033[0m ] MSG    :\n" + host
-	msg = 0
+	msg = ''
 #	icmptx_sendPacket(addr[0],packetID,tube_sendPacket(host, data[28:]))
-	while(msg[len(msg)-1:] != '\n'):
-		msg = tube_sendPacket(host,data[28:])
-		icmptx_sendPacket(addr[0],packetID,msg)
+#	while(msg[len(msg)-1:] != '\n'):
+	msg = tube_sendPacket(host,data[28:])
+	icmptx_sendPacket(addr[0],packetID,msg)
+	if(msg[len(msg)-1:] == '\n'):
+		print ("found end")
+
 def tube_sendPacket(host, data):
 
 	s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
