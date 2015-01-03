@@ -35,7 +35,7 @@ def icmp_checksum(source_string):
 
 
 def icmptx_sendPacket(dst_Ip, packetID, msg_fp):
-	
+
 	#generate ICMP-Id
 	#packetID= random.randint(1, 65535)
 
@@ -57,7 +57,7 @@ def icmptx_recvPacket():
 	host = data[28:]
 	host = host[host.rfind("Host: ")+6:]
 	host = host[:host.find("\r\n")]
-	
+
 
 	print "[ \033[32mDEBUG\033[0m ] RX     : Connected with " + addr[0]
 	print "[ \033[32mDEBUG\033[0m ] RX     : " + str(len(data[28:])) + " Byte received"
@@ -65,21 +65,22 @@ def icmptx_recvPacket():
 	print "[ \033[32mDEBUG\033[0m ] MSG    :\n" + data[28:]
 	print "[ \033[32mDEBUG\033[0m ] RX     : Requestet Host"
 	print "[ \033[32mDEBUG\033[0m ] MSG    :\n" + host
-	
+
 	icmptx_sendPacket(addr[0],packetID,tube_sendPacket(host, data[28:]))
-	
+
 def tube_sendPacket(host, data):
 
 	s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 	s.connect((host,80))
 	s.send(data)
 	msg = s.recv(15000)
+	s.close()
 	print "[ \033[32mDEBUG\033[0m ] RX     : Sent message content"
-	print "[ \033[32mDEBUG\033[0m ] MSG    :\n" + msg	
+	print "[ \033[32mDEBUG\033[0m ] MSG    :\n" + msg
 	return msg
 
 #main program
-print ""
+print "Felix Schulze, Alex Wellnitz 2014 / 2015\n"
 
 
 #open icmptx socket

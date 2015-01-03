@@ -18,15 +18,15 @@ ICMP_ECHO_REQUEST = 8
 ICMP_ECHO_CODE = 0
 
 def getdstIP():
-	
+
 	fd = open(sys.argv[0][:sys.argv[0].rfind("/")] + "/config", "r")
 	config_data = fd.readline()
 	fd.close()
 	return config_data[3:config_data.rfind("\n")]
-	
+
 
 def getProxyPort():
-	
+
 	fd = open(sys.argv[0][:sys.argv[0].rfind("/")] + "/config", "r")
 	config_data = fd.readlines()[1]
 	fd.close()
@@ -54,7 +54,7 @@ def icmp_checksum(source_string):
 
 
 def icmptx_sendPacket(dst_Ip, msg_fp):
-	
+
 	#generate ICMP-Id
 	packetID = random.randint(1, 65535)
 
@@ -74,32 +74,33 @@ def icmptx_recvPacket():
 	data, addr = icmptx_connection.recvfrom(15000)
 	icmp_header = data[20:28]
 	itype, icode, checksum, packetID, sequence = struct.unpack("bbHHh", icmp_header)
-	
+
 	print "[ \033[32mDEBUG\033[0m ] RX     : " + str(len(data[28:])) + " Byte received"
 	print "[ \033[32mDEBUG\033[0m ] RX     : Received message content"
 	print "[ \033[32mDEBUG\033[0m ] MSG    :\n" + data[28:]
-	
+
 	return data[28:]
-	
+
 
 def proxy_recvPacket():
-	conn, addr = proxy_connection.accept()
+	index = 0
+	conn[index], addr[index] = proxy_connection.accept()
 	proxy_connection.setblocking(0)
-	print "[ \033[32mDEBUG\033[0m ] PROXY  : Source IP " + addr[0]
-	print "[ \033[32mDEBUG\033[0m ] PROXY  : Source Port " + str(addr[1])
+	print "[ \033[32mDEBUG\033[0m ] PROXY  : Source IP " + addr[index][0]
+	print "[ \033[32mDEBUG\033[0m ] PROXY  : Source Port " + str(addr[index][1])
 	while 1:
-		data = conn.recv(15000)
+		data = conn[index].recv(15000)
 		if(len(data) == 0):
 			continue
 		icmptx_sendPacket(getdstIP(), data)
 		icmptx_recvPacket()
-		conn.send(icmptx_recvPacket()) 	
-	conn.close()
-	
+		conn[index].send(icmptx_recvPacket())
+		conn[index].close()
+
 
 
 #main program
-print " "
+print "Felix Schulze, Alex Wellnitz 2014 / 2015\n"
 dst_ip = getdstIP()
 getProxyPort()
 
@@ -110,7 +111,6 @@ icmptx_connection = socket.socket(proto = socket.IPPROTO_ICMP, type = socket.SOC
 proxy_connection = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 proxy_connection.bind(('127.0.0.1',string.atoi(getProxyPort())))
 proxy_connection.listen(1)
-proxy_connection.setblocking(0)
 
 
 print "[ \033[32mDEBUG\033[0m ] ICMPTX : Server IP " + dst_ip
