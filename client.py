@@ -83,19 +83,17 @@ def icmptx_recvPacket():
 
 
 def proxy_recvPacket():
-	index = 0
-	conn[index], addr[index] = proxy_connection.accept()
-	proxy_connection.setblocking(0)
-	print "[ \033[32mDEBUG\033[0m ] PROXY  : Source IP " + addr[index][0]
-	print "[ \033[32mDEBUG\033[0m ] PROXY  : Source Port " + str(addr[index][1])
-	while 1:
-		data = conn[index].recv(15000)
-		if(len(data) == 0):
-			continue
-		icmptx_sendPacket(getdstIP(), data)
-		icmptx_recvPacket()
-		conn[index].send(icmptx_recvPacket())
-		conn[index].close()
+	conn, addr = proxy_connection.accept()
+	print "[ \033[32mDEBUG\033[0m ] PROXY  : Source IP " + addr[0]
+	print "[ \033[32mDEBUG\033[0m ] PROXY  : Source Port " + str(addr[1])
+	data = conn.recv(15000)
+	if(len(data) == 0):
+		conn.close()
+		return
+	icmptx_sendPacket(getdstIP(), data)
+	icmptx_recvPacket()
+	conn.send(icmptx_recvPacket())
+	conn.close()
 
 
 
